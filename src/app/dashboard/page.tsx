@@ -1,10 +1,105 @@
 "use client";
 
-import { Divider, Flex } from "antd";
+import { useState } from "react";
+import { Divider } from "antd";
 import { Content } from "antd/es/layout/layout";
 import { motion } from "framer-motion";
+import Plot from "react-plotly.js";
+import { Services } from "@/services";
 
 const DashboardPage = () => {
+	const [chartData, setChartData] = useState<any>(null);
+	const [chartType, setChartType] = useState("");
+
+	const handleInteraction = async (part: string) => {
+		try {
+			let data = null;
+
+			switch (part) {
+				case "compressorInput":
+					data = await Services.getLineChartData();
+					setChartType("line");
+					break;
+
+				case "combustionChamber":
+					data = await Services.getRadarChartData();
+					setChartType("radar");
+					break;
+
+				case "turbine":
+					data = await Services.getBarChartData();
+					setChartType("bar");
+					break;
+
+				default:
+					console.error("Invalid part selected");
+					return;
+			}
+
+			setChartData(data);
+		} catch (error) {
+			console.error("Error fetching data:", error);
+		}
+	};
+
+	const renderChart = () => {
+		if (!chartData || !chartType) return null;
+
+		switch (chartType) {
+			case "line":
+				return (
+					<Plot
+						data={[
+							{
+								x: chartData.timestamps,
+								y: chartData.pressure,
+								type: "scatter",
+								mode: "lines",
+								marker: { color: "blue" },
+							},
+						]}
+						layout={{ title: "Compressor Pressure Output" }}
+					/>
+				);
+
+			case "radar":
+				return (
+					<Plot
+						data={[
+							{
+								type: "scatterpolar",
+								r: chartData.map((d: any) => d.input),
+								theta: chartData.map((d: any) => d.fuel),
+								fill: "toself",
+							},
+						]}
+						layout={{
+							polar: { radialaxis: { visible: true } },
+							title: "Fuel Input Types",
+						}}
+					/>
+				);
+
+			case "bar":
+				return (
+					<Plot
+						data={[
+							{
+								x: chartData.map((d: any) => d.fuel),
+								y: chartData.map((d: any) => d.efficiency),
+								type: "bar",
+								marker: { color: "orange" },
+							},
+						]}
+						layout={{ title: "Efficiency by Fuel Type" }}
+					/>
+				);
+
+			default:
+				return null;
+		}
+	};
+
 	return (
 		<Content
 			style={{
@@ -24,20 +119,14 @@ const DashboardPage = () => {
 					position: "relative",
 				}}
 			>
-				<div
-					style={{
-						position: "relative",
-					}}
-				>
+				{/* Combustion Chamber */}
+				<div style={{ position: "relative" }}>
 					<motion.svg
 						style={{
 							position: "absolute",
 							right: "50%",
 							translateX: "50%",
 							rotate: "90deg",
-						}}
-						variants={{
-							hover: {},
 						}}
 						whileHover={"hover"}
 						width="300"
@@ -50,17 +139,11 @@ const DashboardPage = () => {
 							x2="100"
 							y2="50"
 							stroke="black"
-							stroke-width="2"
+							strokeWidth="2"
 						/>
 						<motion.circle
-							variants={{
-								hover: {
-									scale: "1.5",
-								},
-							}}
-							style={{
-								cursor: "pointer",
-							}}
+							whileHover={{ scale: 1.5 }}
+							style={{ cursor: "pointer" }}
 							cx="50"
 							cy="50"
 							r="5"
@@ -68,6 +151,7 @@ const DashboardPage = () => {
 						/>
 					</motion.svg>
 					<motion.div
+						onClick={() => handleInteraction("combustionChamber")}
 						whileHover={{ scale: 1.1 }}
 						style={{
 							position: "relative",
@@ -93,14 +177,17 @@ const DashboardPage = () => {
 						</svg>
 					</motion.div>
 				</div>
+
+				{/* Compressor and Turbine */}
 				<div
-					style={{ flexDirection: "row", display: "flex", columnGap: "3.5rem" }}
+					style={{
+						flexDirection: "row",
+						display: "flex",
+						columnGap: "3.5rem",
+					}}
 				>
-					<div
-						style={{
-							position: "relative",
-						}}
-					>
+					{/* Compressor */}
+					<div style={{ position: "relative" }}>
 						<motion.svg
 							width="300"
 							height="200"
@@ -118,78 +205,29 @@ const DashboardPage = () => {
 								x2="50"
 								y2="150"
 								stroke="black"
-								stroke-width="2"
+								strokeWidth="2"
 							/>
-
 							<line
 								x1="50"
 								y1="150"
 								x2="200"
 								y2="150"
 								stroke="black"
-								stroke-width="2"
+								strokeWidth="2"
 							/>
-
 							<motion.circle
-								variants={{
-									hover: {
-										scale: "1.5",
-									},
-								}}
-								style={{
-									cursor: "pointer",
-								}}
+								whileHover={{ scale: 1.5 }}
+								style={{ cursor: "pointer" }}
 								cx="50"
 								cy="150"
 								r="5"
 								fill="red"
 							/>
 						</motion.svg>
-
-						<motion.svg
-							style={{
-								position: "absolute",
-								right: "50%",
-								top: "50%",
-								transform: "translate(0%, -50%)",
-							}}
-							variants={{
-								hover: {},
-							}}
-							whileHover={"hover"}
-							width="300"
-							height="100"
-							xmlns="http://www.w3.org/2000/svg"
-						>
-							<line
-								x1="20"
-								y1="50"
-								x2="280"
-								y2="50"
-								stroke="black"
-								stroke-width="2"
-							/>
-							<motion.circle
-								variants={{
-									hover: {
-										scale: "1.5",
-									},
-								}}
-								style={{
-									cursor: "pointer",
-								}}
-								cx="50"
-								cy="50"
-								r="5"
-								fill="red"
-							/>
-						</motion.svg>
-
 						<motion.div
+							onClick={() => handleInteraction("compressorInput")}
 							whileHover={{ scale: 1.1 }}
-							style={{
-								position: "relative",
-							}}
+							style={{ position: "relative" }}
 						>
 							<p
 								style={{
@@ -217,11 +255,9 @@ const DashboardPage = () => {
 							</svg>
 						</motion.div>
 					</div>
-					<div
-						style={{
-							position: "relative",
-						}}
-					>
+
+					{/* Turbine */}
+					<div style={{ position: "relative" }}>
 						<motion.svg
 							width="300"
 							height="200"
@@ -232,9 +268,6 @@ const DashboardPage = () => {
 								transformOrigin: "center",
 								rotateX: 180,
 							}}
-							variants={{
-								hover: {},
-							}}
 							whileHover={"hover"}
 							xmlns="http://www.w3.org/2000/svg"
 						>
@@ -244,78 +277,29 @@ const DashboardPage = () => {
 								x2="50"
 								y2="150"
 								stroke="black"
-								stroke-width="2"
+								strokeWidth="2"
 							/>
-
 							<line
 								x1="50"
 								y1="150"
 								x2="200"
 								y2="150"
 								stroke="black"
-								stroke-width="2"
+								strokeWidth="2"
 							/>
-
 							<motion.circle
-								variants={{
-									hover: {
-										scale: "1.5",
-									},
-								}}
-								style={{
-									cursor: "pointer",
-								}}
+								whileHover={{ scale: 1.5 }}
+								style={{ cursor: "pointer" }}
 								cx="50"
 								cy="150"
 								r="5"
 								fill="red"
 							/>
 						</motion.svg>
-
-						<motion.svg
-							style={{
-								position: "absolute",
-								right: "-50%",
-								top: "50%",
-								transform: "translate(0%, -50%)",
-							}}
-							variants={{
-								hover: {},
-							}}
-							whileHover={"hover"}
-							width="300"
-							height="100"
-							xmlns="http://www.w3.org/2000/svg"
-						>
-							<line
-								x1="20"
-								y1="50"
-								x2="280"
-								y2="50"
-								stroke="black"
-								stroke-width="2"
-							/>
-							<motion.circle
-								variants={{
-									hover: {
-										scale: "1.5",
-									},
-								}}
-								style={{
-									cursor: "pointer",
-								}}
-								cx="250"
-								cy="50"
-								r="5"
-								fill="red"
-							/>
-						</motion.svg>
-
 						<motion.div
+							onClick={() => handleInteraction("turbine")}
 							whileHover={{ scale: 1.1 }}
-							style={{
-								position: "relative",
-							}}
+							style={{ position: "relative" }}
 						>
 							<p
 								style={{
@@ -346,7 +330,8 @@ const DashboardPage = () => {
 				</div>
 			</div>
 			<Divider style={{ margin: "3rem 0" }} />
-			<div></div>
+			{/* Render Chart */}
+			<div>{renderChart()}</div>
 		</Content>
 	);
 };
