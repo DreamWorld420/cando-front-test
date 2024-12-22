@@ -1086,6 +1086,7 @@ __metadata:
     react-dom: "npm:^19.0.0"
     react-plotly.js: "npm:^2.6.0"
     typescript: "npm:^5"
+    zustand: "npm:^5.0.2"
   languageName: unknown
   linkType: soft
 
@@ -4448,5 +4449,26 @@ __metadata:
   version: 2.2.0
   resolution: "xtend@npm:2.2.0"
   checksum: 10c0/396c724b8ea54c7346d7ca304116dc9aa0327b4cee4782c0a42707e6022d9a6b1c1d61b056357b1ee24102d6a366a90a313cc38e79bf70452d4d205b64a1575f
+  languageName: node
+  linkType: hard
+
+"zustand@npm:^5.0.2":
+  version: 5.0.2
+  resolution: "zustand@npm:5.0.2"
+  peerDependencies:
+    "@types/react": ">=18.0.0"
+    immer: ">=9.0.6"
+    react: ">=18.0.0"
+    use-sync-external-store: ">=1.2.0"
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    immer:
+      optional: true
+    react:
+      optional: true
+    use-sync-external-store:
+      optional: true
+  checksum: 10c0/d9bb048d8129fd1aaed3fda974991b15a7c9c31ef06f78e9bf5c4b3678f249850764a6dadb8c93127257d07831995cf7a048281658a37c5d1143ad6f397fe37c
   languageName: node
   linkType: hard

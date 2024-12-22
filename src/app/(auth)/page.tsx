@@ -7,7 +7,10 @@ import Password from "antd/es/input/Password";
 import { Content } from "antd/es/layout/layout";
 import ClientStorage from "../utils/ClientStorage";
 import { useFormik } from "formik";
+import { login } from "../actions";
 import { useRouter } from "next/navigation";
+import { APP_ROUTES } from "@/constants";
+import { UserActions, useUserActionStore } from "../stores/UserActionStore";
 
 interface FieldType {
 	identity?: string;
@@ -16,6 +19,7 @@ interface FieldType {
 
 const LoginPage = () => {
 	const router = useRouter();
+	const addUserAction = useUserActionStore((state) => state.addAction);
 	const { handleSubmit, setFieldValue } = useFormik({
 		initialValues: {
 			identity: "",
@@ -23,8 +27,11 @@ const LoginPage = () => {
 		},
 		onSubmit: async (values: FieldType) => {
 			try {
-				const { data } = await Services.login(values);
+				const data = await Services.login(values);
 				ClientStorage.setToken(data.token);
+				login(data.token);
+				router.push(APP_ROUTES.dashboard);
+				addUserAction(UserActions.LOGIN);
 			} catch (err) {
 				console.error(err);
 			}
@@ -43,12 +50,12 @@ const LoginPage = () => {
 		>
 			<form onSubmit={handleSubmit}>
 				<FormItem
-					label="Email"
+					label="Username"
 					name="identity"
 					rules={[
 						{
 							required: true,
-							message: "Please provide your email!",
+							message: "Please provide your username!",
 						},
 					]}
 				>

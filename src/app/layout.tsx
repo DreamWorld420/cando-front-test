@@ -31,7 +31,6 @@ export default function RootLayout({
 					<Layout
 						style={{
 							minHeight: "100vh",
-							padding: "64px 0",
 						}}
 					>
 						{children}

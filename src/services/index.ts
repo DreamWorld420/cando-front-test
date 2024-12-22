@@ -7,19 +7,13 @@ export const axiosInstance = axios.create({
 });
 
 axiosInstance.interceptors.request.use((config) => {
-	const token = ClientStorage.getToken();
-	if (token) {
-		config.headers.Authorization = `Token ${token}`;
-
-		if (!isServer()) {
-			const token = ClientStorage.getToken();
-			if (token) {
-				config.headers.Authorization = `Token ${token}`;
-			}
-		} else {
-			config.headers.Cookie = require("next/headers").headers().get("Cookie");
+	if (!isServer()) {
+		const token = ClientStorage.getToken();
+		if (token) {
+			config.headers.Authorization = `Token ${token}`;
 		}
 	}
+
 	return config;
 });
 
@@ -29,7 +23,16 @@ export const Services = {
 			.post("/auth", { username: identity, password })
 			.then((res) => res.data),
 
-	// Fetch efficiency data for bar chart
+	getMe: (token: string) => {
+		return axiosInstance
+			.get("/me", {
+				headers: {
+					Authorization: `Token ${token}`,
+				},
+			})
+			.then((res) => res.data);
+	},
+
 	getBarChartData: () =>
 		axiosInstance
 			.get("/chart/bar")
@@ -39,7 +42,6 @@ export const Services = {
 				throw err;
 			}),
 
-	// Fetch power usage data for donut chart
 	getDonutChartData: () =>
 		axiosInstance
 			.get("/chart/donut")
@@ -49,7 +51,6 @@ export const Services = {
 				throw err;
 			}),
 
-	// Fetch fuel input data for radar chart
 	getRadarChartData: () =>
 		axiosInstance
 			.get("/chart/radar")
@@ -59,7 +60,6 @@ export const Services = {
 				throw err;
 			}),
 
-	// Fetch compressor pressure data for line chart
 	getLineChartData: () =>
 		axiosInstance
 			.get("/chart/line")
@@ -69,7 +69,6 @@ export const Services = {
 				throw err;
 			}),
 
-	// Fetch turbine performance data for scatter chart
 	getScatterChartData: () =>
 		axiosInstance
 			.get("/chart/scatter")
